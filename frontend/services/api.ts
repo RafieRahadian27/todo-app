@@ -1,14 +1,13 @@
-export const API_BASE_URL = "https://dummyjson.com";
+export const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
 
 export class ApiError extends Error {
   status: number;
-  statusText: string;
 
-  constructor(message: string, status: number, statusText: string) {
+  constructor(message: string, status: number) {
     super(message);
-    this.name = "ApiError";
+    this.name = 'ApiError';
     this.status = status;
-    this.statusText = statusText;
   }
 }
 
@@ -16,41 +15,39 @@ export async function apiClient<T>(
   endpoint: string,
   options: RequestInit = {}
 ): Promise<T> {
-  const url = `${API_BASE_URL}${endpoint}`;
+  const url = `${API_BASE_URL}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`;
 
-  const defaultHeaders = {
-    "Content-Type": "application/json",
+  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+
+  const defaultHeaders: Record<string, string> = {
+    'Content-Type': 'application/json',
   };
 
-  const response = await fetch(url, {
-    ...options,
-    headers: {
-      ...defaultHeaders,
-      ...options.headers,
-    },
-    next: {
-      revalidate: 30,
-    },
-  });
+  if (token) {
+    defaultHeaders['Authorization'] = `Bearer ${token}`;
+  }
+
+  let response: Response;
+  try {
+    response = await fetch(url, {
+      ...options,
+      headers: {
+        ...defaultHeaders,
+        ...options.headers,
+      },
+    });
+  } catch {
+    throw new Error(
+      'Gagal terhubung ke server backend'
+    );
+  }
+
+  const data = await response.json().catch(() => null);
 
   if (!response.ok) {
-    throw new ApiError(
-      `API Error: ${response.statusText}`,
-      response.status,
-      response.statusText
-    );
+    const errorMessage = data?.message || `Terjadi kesalahan (Status: ${response.status})`;
+    throw new ApiError(errorMessage, response.status);
   }
 
-  try {
-    const data = await response.json();
-    return data;
-  } catch (error) {
-    if (error instanceof ApiError) {
-      throw error;
-    }
-
-    throw new Error(
-      `Network Error: Tidak dapat terhubung ke server API`
-    );
-  }
+  return data as T;
 }

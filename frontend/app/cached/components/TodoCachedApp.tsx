@@ -22,7 +22,6 @@ export default function TodoCachedApp({
       id: Date.now(),
       title,
       completed: false,
-      description: "",
       createdAt: new Date().toLocaleString(),
     };
 

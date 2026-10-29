@@ -26,7 +26,7 @@ export default function ApiTodoList({
     );
 
     try {
-      await todoService.updateTodo(taskId, targetStatus);
+      await todoService.updateTodo(taskId, { is_completed: targetStatus });
     } catch (error) {
       console.warn(
         "Simulasi update ke API DummyJSON gagal (fallback state):",

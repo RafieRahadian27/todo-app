@@ -19,7 +19,6 @@ export default function TodoStateOnlyApp({
       id: Date.now(),
       title,
       completed: false,
-      description: "",
       createdAt: new Date().toLocaleString(),
     };
 

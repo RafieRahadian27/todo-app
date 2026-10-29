@@ -52,10 +52,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const todo = await todoService.createTodo(
-      body.todo,
-      body.userId ?? 1
-    );
+    const todo = await todoService.createTodo({
+      todo: body.todo,
+      userId: body.userId ?? 1,
+    });
 
     return NextResponse.json(
       {
