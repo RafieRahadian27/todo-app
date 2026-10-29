@@ -1,0 +1,86 @@
+{
+  "info": {
+    "name": "UB Express test",
+    "description": "Praktikum 4 - Uji coba RESTful API todo-app (Express + MySQL + JWT).\n\nUrutan: Register -> login (token otomatis disimpan ke variabel global {{jwt_token}}) -> add task -> index.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url", "value": "http://localhost:5000" }
+  ],
+  "item": [
+    {
+      "name": "Register",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"username\": \"fizo\",\n    \"email\": \"fizo@example.com\",\n    \"password\": \"password123\"\n}",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": "{{base_url}}/api/auth/register"
+      }
+    },
+    {
+      "name": "login",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "// Mengambil response berformat JSON",
+              "const response = pm.response.json();",
+              "",
+              "// Mengecek apakah login sukses dan token tersedia",
+              "if (response.success && response.token) {",
+              "    // Menyimpan token ke dalam variabel global Postman bernama 'jwt_token'",
+              "    pm.globals.set(\"jwt_token\", response.token);",
+              "    console.log(\"Token berhasil disimpan otomatis!\");",
+              "}"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"username\": \"fizo\",\n    \"password\": \"password123\"\n}",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": "{{base_url}}/api/auth/login"
+      }
+    },
+    {
+      "name": "add task",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [{ "key": "token", "value": "{{jwt_token}}", "type": "string" }]
+        },
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"task\": \"Uji coba endpoint dengan struktur MVC baru\"\n}",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": "{{base_url}}/api/todos"
+      }
+    },
+    {
+      "name": "index",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [{ "key": "token", "value": "{{jwt_token}}", "type": "string" }]
+        },
+        "method": "GET",
+        "header": [],
+        "url": "{{base_url}}/api/todos"
+      }
+    }
+  ]
+}
