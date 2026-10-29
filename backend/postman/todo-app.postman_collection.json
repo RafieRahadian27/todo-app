@@ -1,7 +1,7 @@
 {
   "info": {
     "name": "UB Express test",
-    "description": "Praktikum 4 & 5 - Uji coba RESTful API todo-app (Express + MySQL + JWT).\n\nUrutan: Register -> login (token disimpan otomatis ke {{jwt_token}}) -> add task (id todo disimpan otomatis ke {{todo_id}}) -> index -> Edit task -> GetTaskById -> Hapus Task -> 404 Handler -> Auth Handler.\n\nIngin memakai id tertentu seperti di modul (misal 13)? Ganti {{todo_id}} di URL dengan angkanya.",
+    "description": "Praktikum 4, 5 & 6 - Uji coba RESTful API todo-app (Express + MySQL + JWT).\n\nFormat response (Praktikum 6): { success, message, data?, meta: { timestamp, pagination? } }. Setiap response juga membawa header X-Request-Id.\n\nUrutan: Register -> login (token disimpan otomatis ke {{jwt_token}}) -> add task (id disimpan ke {{todo_id}}) -> index -> index (pagination) -> Edit task -> GetTaskById -> Hapus Task -> 404 Handler -> Auth Handler.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
@@ -48,10 +48,10 @@
               "// Mengambil response berformat JSON",
               "const response = pm.response.json();",
               "",
-              "// Mengecek apakah login sukses dan token tersedia",
-              "if (response.success && response.token) {",
+              "// Praktikum 6: token sekarang ada di dalam response.data",
+              "if (response.success && response.data && response.data.token) {",
               "    // Menyimpan token ke dalam variabel global Postman bernama 'jwt_token'",
-              "    pm.globals.set(\"jwt_token\", response.token);",
+              "    pm.globals.set(\"jwt_token\", response.data.token);",
               "    console.log(\"Token berhasil disimpan otomatis!\");",
               "}"
             ]
@@ -142,6 +142,45 @@
         "method": "GET",
         "header": [],
         "url": "{{base_url}}/api/todos"
+      }
+    },
+    {
+      "name": "index (pagination)",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{jwt_token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/todos?page=1&perPage=5",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "todos"
+          ],
+          "query": [
+            {
+              "key": "page",
+              "value": "1",
+              "description": "Halaman ke- (default 1)"
+            },
+            {
+              "key": "perPage",
+              "value": "5",
+              "description": "Jumlah data per halaman (default 10, maks 50)"
+            }
+          ]
+        }
       }
     },
     {
