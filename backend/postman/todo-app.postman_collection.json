@@ -1,22 +1,38 @@
 {
   "info": {
     "name": "UB Express test",
-    "description": "Praktikum 4 - Uji coba RESTful API todo-app (Express + MySQL + JWT).\n\nUrutan: Register -> login (token otomatis disimpan ke variabel global {{jwt_token}}) -> add task -> index.",
+    "description": "Praktikum 4 & 5 - Uji coba RESTful API todo-app (Express + MySQL + JWT).\n\nUrutan: Register -> login (token disimpan otomatis ke {{jwt_token}}) -> add task (id todo disimpan otomatis ke {{todo_id}}) -> index -> Edit task -> GetTaskById -> Hapus Task -> 404 Handler -> Auth Handler.\n\nIngin memakai id tertentu seperti di modul (misal 13)? Ganti {{todo_id}} di URL dengan angkanya.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
-    { "key": "base_url", "value": "http://localhost:5000" }
+    {
+      "key": "base_url",
+      "value": "http://localhost:5000"
+    },
+    {
+      "key": "todo_id",
+      "value": "13"
+    }
   ],
   "item": [
     {
       "name": "Register",
       "request": {
         "method": "POST",
-        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
         "body": {
           "mode": "raw",
           "raw": "{\n    \"username\": \"fizo\",\n    \"email\": \"fizo@example.com\",\n    \"password\": \"password123\"\n}",
-          "options": { "raw": { "language": "json" } }
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
         },
         "url": "{{base_url}}/api/auth/register"
       }
@@ -44,11 +60,20 @@
       ],
       "request": {
         "method": "POST",
-        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
         "body": {
           "mode": "raw",
           "raw": "{\n    \"username\": \"fizo\",\n    \"password\": \"password123\"\n}",
-          "options": { "raw": { "language": "json" } }
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
         },
         "url": "{{base_url}}/api/auth/login"
       }
@@ -58,24 +83,151 @@
       "request": {
         "auth": {
           "type": "bearer",
-          "bearer": [{ "key": "token", "value": "{{jwt_token}}", "type": "string" }]
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{jwt_token}}",
+              "type": "string"
+            }
+          ]
         },
         "method": "POST",
-        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
         "body": {
           "mode": "raw",
           "raw": "{\n    \"task\": \"Uji coba endpoint dengan struktur MVC baru\"\n}",
-          "options": { "raw": { "language": "json" } }
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
         },
         "url": "{{base_url}}/api/todos"
-      }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "// Simpan id todo yang baru dibuat ke variabel {{todo_id}}",
+              "const response = pm.response.json();",
+              "if (response.success && response.data) {",
+              "    pm.collectionVariables.set(\"todo_id\", response.data.id);",
+              "    console.log(\"todo_id tersimpan:\", response.data.id);",
+              "}"
+            ]
+          }
+        }
+      ]
     },
     {
       "name": "index",
       "request": {
         "auth": {
           "type": "bearer",
-          "bearer": [{ "key": "token", "value": "{{jwt_token}}", "type": "string" }]
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{jwt_token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [],
+        "url": "{{base_url}}/api/todos"
+      }
+    },
+    {
+      "name": "Edit task",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{jwt_token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"task\": \"Uji coba endpoint dengan struktur MVC baru\",\n    \"is_completed\": true\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": "{{base_url}}/api/todos/{{todo_id}}"
+      }
+    },
+    {
+      "name": "GetTaskById",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{jwt_token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [],
+        "url": "{{base_url}}/api/todos/{{todo_id}}"
+      }
+    },
+    {
+      "name": "Hapus Task",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{jwt_token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "DELETE",
+        "header": [],
+        "url": "{{base_url}}/api/todos/{{todo_id}}"
+      }
+    },
+    {
+      "name": "404 Handler",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "GET",
+        "header": [],
+        "url": "{{base_url}}/api/sembarang"
+      }
+    },
+    {
+      "name": "Auth Handler",
+      "request": {
+        "auth": {
+          "type": "noauth"
         },
         "method": "GET",
         "header": [],
